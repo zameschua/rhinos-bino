@@ -24,8 +24,6 @@ import {
 } from "@chakra-ui/react";
 import _ from "lodash";
 
-const NUMBER_REGEX = /^-?\d*\.?\d*$/;
-
 const App = () => {
   const toast = useToast();
 
@@ -117,12 +115,9 @@ const App = () => {
                       Azimuth {index + 1}
                     </Text>
                     <Input
+                      type={"number"}
                       value={reading.azimuth}
                       onChange={(event) => {
-                        if (!NUMBER_REGEX.test(event.target.value)) {
-                          return;
-                        }
-
                         setReadings(
                           readings.map((readingInner, indexInner) => {
                             if (indexInner !== index) {
@@ -144,12 +139,9 @@ const App = () => {
                       Elevation {index + 1}
                     </Text>
                     <Input
+                      type={"number"}
                       value={reading.elevation}
                       onChange={(event) => {
-                        if (!NUMBER_REGEX.test(event.target.value)) {
-                          return;
-                        }
-
                         setReadings(
                           readings.map((readingInner, indexInner) => {
                             if (indexInner !== index) {
