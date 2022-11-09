@@ -212,7 +212,7 @@ const App = () => {
               onClick={() => {
                 let hasError: boolean = false;
                 for (const [index, reading] of Object.entries(readings)) {
-                  if (reading.azimuth === undefined) {
+                  if (reading.azimuth === "") {
                     hasError = true;
                     toast({
                       status: "error",
@@ -222,7 +222,7 @@ const App = () => {
                       isClosable: true,
                     });
                   }
-                  if (reading.elevation === undefined) {
+                  if (reading.elevation === "") {
                     hasError = true;
                     toast({
                       status: "error",
