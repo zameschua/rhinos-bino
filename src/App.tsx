@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./App.css";
 import {
   Box,
@@ -10,37 +10,46 @@ import {
   ModalCloseButton,
   ModalBody,
   useToast,
-  Input,
   Text,
   Divider,
   Center,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  ModalHeader,
+  ModalOverlay,
+  Input,
 } from "@chakra-ui/react";
+import _ from "lodash";
 
-const NUMBER_REGEX = /^\d*\.?\d*$/;
+const NUMBER_REGEX = /^-?\d*\.?\d*$/;
 
 const App = () => {
   const toast = useToast();
-  const [isModalVisible, setModalVisible] = useState<boolean>(false);
 
-  const [a1, setA1] = useState<string>("");
-  const [e1, setE1] = useState<string>("");
-  const [a2, setA2] = useState<string>("");
-  const [e2, setE2] = useState<string>("");
-  const [a3, setA3] = useState<string>("");
-  const [e3, setE3] = useState<string>("");
-  const [a4, setA4] = useState<string>("");
-  const [e4, setE4] = useState<string>("");
-  const [a5, setA5] = useState<string>("");
-  const [e5, setE5] = useState<string>("");
+  const [readings, setReadings] = useState<
+    { azimuth: string; elevation: string }[]
+  >([
+    { azimuth: "", elevation: "" },
+    { azimuth: "", elevation: "" },
+    { azimuth: "", elevation: "" },
+    { azimuth: "", elevation: "" },
+    { azimuth: "", elevation: "" },
+  ]);
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [numberOfShots, setNumberOfShots] = useState<number>(5);
 
   return (
     <ChakraProvider>
       <Center
         overflowY={"scroll"}
         width={"100vw"}
+        minHeight={"100vh"}
         alignContent={"center"}
         backgroundColor={"gray.700"}
-        padding={"8"}
+        paddingY={"8"}
         paddingBottom={100}
       >
         <Box
@@ -53,202 +62,116 @@ const App = () => {
           <Text fontSize={24} fontWeight={"medium"} marginBottom={4}>
             Rhino ball-sighting calculator
           </Text>
+
           <Box marginBottom={8}>
-            <Box marginBottom={4}>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Azimuth 1
-              </Text>
-              <Input
-                value={a1}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
+            <Text fontSize={20} fontWeight={"semibold"} marginBottom={2}>
+              Number of shots
+            </Text>
+            <Divider marginBottom={2} />
+            <NumberInput
+              min={3}
+              max={5}
+              defaultValue={numberOfShots}
+              onChange={(valueAsString, valueAsNumber) => {
+                if (isNaN(valueAsNumber)) {
+                  return;
+                }
 
-                  if (isValid) {
-                    setA1(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-            <Box>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Elevation 1
-              </Text>
-              <Input
-                value={e1}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
+                setNumberOfShots(valueAsNumber);
 
-                  if (isValid) {
-                    setE1(event.target.value);
+                let newReadings: {
+                  azimuth: string;
+                  elevation: string;
+                }[] = _.cloneDeep(readings);
+                if (valueAsNumber > readings.length) {
+                  while (newReadings.length < valueAsNumber) {
+                    newReadings.push({
+                      azimuth: "",
+                      elevation: "",
+                    });
                   }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
+                } else {
+                  newReadings = _.slice(newReadings, 0, valueAsNumber);
+                }
+                setReadings(newReadings);
+              }}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
           </Box>
-          <Divider marginBottom={8} />
-          <Box marginBottom={8}>
-            <Box marginBottom={4}>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Azimuth 2
-              </Text>
-              <Input
-                value={a2}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
 
-                  if (isValid) {
-                    setA2(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-            <Box>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Elevation 2
-              </Text>
-              <Input
-                value={e2}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
+          {readings.map((reading, index) => {
+            return (
+              <Box key={index}>
+                <Text fontSize={20} fontWeight={"semibold"} marginBottom={2}>
+                  Shot {index + 1}
+                </Text>
+                <Divider marginBottom={2} />
+                <Box marginBottom={8}>
+                  <Box marginBottom={4}>
+                    <Text fontWeight={"medium"} color={"gray.600"}>
+                      Azimuth {index + 1}
+                    </Text>
+                    <Input
+                      value={reading.azimuth}
+                      onChange={(event) => {
+                        if (!NUMBER_REGEX.test(event.target.value)) {
+                          return;
+                        }
 
-                  if (isValid) {
-                    setE2(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-          </Box>
-          <Divider marginBottom={8} />
-          <Box marginBottom={8}>
-            <Box marginBottom={4}>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Azimuth 3
-              </Text>
-              <Input
-                value={a3}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
+                        setReadings(
+                          readings.map((readingInner, indexInner) => {
+                            if (indexInner !== index) {
+                              return readingInner;
+                            }
 
-                  if (isValid) {
-                    setA3(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-            <Box>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Elevation 3
-              </Text>
-              <Input
-                value={e3}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
+                            return {
+                              azimuth: event.target.value,
+                              elevation: reading.elevation,
+                            };
+                          })
+                        );
+                      }}
+                      placeholder={"0.00"}
+                    />
+                  </Box>
+                  <Box>
+                    <Text fontWeight={"medium"} color={"gray.600"}>
+                      Elevation {index + 1}
+                    </Text>
+                    <Input
+                      value={reading.elevation}
+                      onChange={(event) => {
+                        if (!NUMBER_REGEX.test(event.target.value)) {
+                          return;
+                        }
 
-                  if (isValid) {
-                    setE3(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-          </Box>
-          <Divider marginBottom={8} />
-          <Box marginBottom={8}>
-            <Box marginBottom={4}>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Azimuth 4
-              </Text>
-              <Input
-                value={a4}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
+                        setReadings(
+                          readings.map((readingInner, indexInner) => {
+                            if (indexInner !== index) {
+                              return readingInner;
+                            }
 
-                  if (isValid) {
-                    setA4(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-            <Box>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Elevation 4
-              </Text>
-              <Input
-                value={e4}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
-
-                  if (isValid) {
-                    setE4(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-          </Box>
-          <Divider marginBottom={8} />
-          <Box marginBottom={8}>
-            <Box marginBottom={4}>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Azimuth 5
-              </Text>
-              <Input
-                value={a5}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
-
-                  if (isValid) {
-                    setA5(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-            <Box>
-              <Text fontWeight={"medium"} color={"text.600"}>
-                Elevation 5
-              </Text>
-              <Input
-                value={e5}
-                onChange={(event) => {
-                  const isValid: boolean = NUMBER_REGEX.test(
-                    event.target.value
-                  );
-
-                  if (isValid) {
-                    setE5(event.target.value);
-                  }
-                }}
-                placeholder={"0.00"}
-              />
-            </Box>
-          </Box>
+                            return {
+                              azimuth: reading.azimuth,
+                              elevation: event.target.value,
+                            };
+                          })
+                        );
+                      }}
+                      placeholder={"0.00"}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
         </Box>
-        <Box
+        <Center
           position={"fixed"}
           bottom={0}
           width={"100%"}
@@ -261,18 +184,24 @@ const App = () => {
             <Button
               flex={1}
               variant={"outline"}
-              colorScheme={"gray"}
               onClick={() => {
-                setA1("");
-                setE1("");
-                setA2("");
-                setE2("");
-                setA3("");
-                setE3("");
-                setA4("");
-                setE4("");
-                setA5("");
-                setE5("");
+                let newReadings: {
+                  azimuth: string;
+                  elevation: string;
+                }[] = [];
+
+                for (let i = 0; i < numberOfShots; i++) {
+                  newReadings.push({
+                    azimuth: "",
+                    elevation: "",
+                  });
+                }
+                setReadings(newReadings);
+                toast({
+                  status: "success",
+                  description: "Successfully cleared all readings",
+                  isClosable: true,
+                });
               }}
             >
               Clear all
@@ -281,39 +210,31 @@ const App = () => {
               colorScheme={"blue"}
               flex={1}
               onClick={() => {
-                if (
-                  a1 === "" ||
-                  e1 === "" ||
-                  a2 === "" ||
-                  e2 === "" ||
-                  a3 === "" ||
-                  e3 === ""
-                ) {
-                  toast({
-                    description: "Need at least 3 readings to continue",
-                    status: "error",
-                    position: "top",
-                  });
-                  return;
+                let hasError: boolean = false;
+                for (const [index, reading] of Object.entries(readings)) {
+                  if (reading.azimuth === undefined) {
+                    hasError = true;
+                    toast({
+                      status: "error",
+                      description: `Shot ${
+                        parseInt(index) + 1
+                      } missing azimuth`,
+                      isClosable: true,
+                    });
+                  }
+                  if (reading.elevation === undefined) {
+                    hasError = true;
+                    toast({
+                      status: "error",
+                      description: `Shot ${
+                        parseInt(index) + 1
+                      } missing elevation`,
+                      isClosable: true,
+                    });
+                  }
                 }
 
-                if ((a4 === "" && e4 !== "") || (a4 !== "" && e4 === "")) {
-                  toast({
-                    description:
-                      "Azimuth 4 and Elevation 4 need to both be populated",
-                    status: "error",
-                    position: "top",
-                  });
-                  return;
-                }
-
-                if ((a5 === "" && e5 !== "") || (a5 !== "" && e5 === "")) {
-                  toast({
-                    description:
-                      "Azimuth 5 and Elevation 5 need to both be populated",
-                    status: "error",
-                    position: "top",
-                  });
+                if (hasError) {
                   return;
                 }
 
@@ -323,23 +244,77 @@ const App = () => {
               Calculate
             </Button>
           </ButtonGroup>
-        </Box>
+        </Center>
       </Center>
+      {isModalVisible && (
+        <ResultModal
+          readings={readings}
+          onClose={() => setModalVisible(false)}
+        />
+      )}
+    </ChakraProvider>
+  );
+};
 
-      <Modal isOpen={isModalVisible} onClose={() => setModalVisible(false)}>
-        <ModalContent maxWidth={"400"} width={"100%"} shadow={"lg"}>
-          <ModalCloseButton />
-          <ModalBody padding={"4"}>
+const ResultModal = ({
+  readings,
+  onClose,
+}: {
+  readings: {
+    azimuth: string;
+    elevation: string;
+  }[];
+  onClose: () => void;
+}) => {
+  const azimuth: number = useMemo(() => {
+    return (
+      (_.sumBy(readings, (reading) => parseFloat(reading?.azimuth ?? 0)) /
+        readings.length) *
+        2 -
+      1
+    );
+  }, [readings]);
+  const elevation: number = useMemo(() => {
+    return (
+      (_.sumBy(readings, (reading) => parseFloat(reading?.elevation ?? 0)) /
+        readings.length) *
+        2 -
+      1
+    );
+  }, [readings]);
+  return (
+    <Modal isOpen={true} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent maxWidth={"500"} width={"100%"} shadow={"lg"}>
+        <ModalHeader>
+          <Text fontSize={24} fontWeight={"medium"}>
+            Zeroing Adjustment
+          </Text>
+        </ModalHeader>
+        <ModalCloseButton />
+
+        <ModalBody padding={"4"}>
+          <Box marginBottom={4}>
             <Text fontWeight={"medium"} color={"text.600"}>
               Azimuth
             </Text>
+            <Text>
+              {azimuth > 0 && "+"}
+              {azimuth.toFixed(2)}
+            </Text>
+          </Box>
+          <Box>
             <Text fontWeight={"medium"} color={"text.600"}>
               Elevation
             </Text>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </ChakraProvider>
+            <Text>
+              {elevation > 0 && "+"}
+              {elevation.toFixed(2)}
+            </Text>
+          </Box>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 
